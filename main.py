@@ -6,7 +6,7 @@ from flask import Flask, send_from_directory
 app = Flask(__name__)
 
 # Define HLS output directory
-HLS_DIR = "hls"
+HLS_DIR = "/tmp/hls"
 os.makedirs(HLS_DIR, exist_ok=True)
 
 # FFmpeg command to generate low-latency HLS stream
@@ -16,13 +16,14 @@ ffmpeg_command = [
     '-i', 'alsa_output.usb-VIA_Technologies_Inc._VIA_USB_Device-00.analog-stereo.monitor',  # Update as needed
     '-f', 'v4l2',  # Video input from video4linux2
     '-i', '/dev/video0',  # Your OBS virtual camera device
-    '-c:v', 'libx264',  # Encode video with H.264
+    '-c:v', 'libx264',  # codec: Encode video with H.264
     '-preset', 'ultrafast',  # Faster encoding for real-time
     '-tune', 'zerolatency',  # Optimize for low latency
-    '-c:a', 'aac',  # Encode audio with AAC
+    '-c:a', 'aac',  # codec: Encode audio with AAC
     '-f', 'hls',  # Output format as HLS
-    '-hls_time', '0.5',  # 0.5-second segments for low latency
-    '-hls_list_size', '2',  # Keep the last 5 segments in the playlist
+    '-g', '30',
+    '-hls_time', '1',  # 0.5-second segments for low latency
+    '-hls_list_size', '5',  # Keep the last 5 segments in the playlist
     '-hls_flags', 'delete_segments+append_list',  # Delete old segments and update the playlist dynamically
     os.path.join(HLS_DIR, 'stream.m3u8')  # Output HLS playlist
 ]
